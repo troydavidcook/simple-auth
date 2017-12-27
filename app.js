@@ -1,5 +1,5 @@
 const passportLocalMongoose = require('passport-local-mongoose');
-const session        = require('express-session');
+const session               = require('express-session');
 const localStrategy         = require('passport-local');
 const User                  = require('./models/user');
 const bodyParser            = require('body-parser');
@@ -43,7 +43,7 @@ app.get('/', (req, res) => {
   res.render('home');
 });
 
-app.get('/secret', (req, res) => {
+app.get('/secret', isLoggedIn, (req, res) => {
   res.render('secret');
 });
 
@@ -80,6 +80,18 @@ app.post('/login', passport.authenticate(
   },
 ), (req, res) => {
 });
+
+app.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/');
+});
+
+function isLoggedIn(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+}
 
 const port = process.env.PORT || 3000;
 
