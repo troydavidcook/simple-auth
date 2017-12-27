@@ -24,6 +24,8 @@ app.use(session({
 // Passport setting up server
 app.use(passport.initialize());
 app.use(passport.session());
+
+passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
@@ -53,6 +55,31 @@ app.get('/signup', (req, res) => {
   res.render('signup');
 });
 
+app.post('/signup', (req, res) => {
+  const newUser = { username: req.body.username, password: req.body.password };
+  User.register(new User({ username: newUser.username }), newUser.password, (err, user) => {
+    if (err) {
+      console.log('Error: ', err);
+      return res.render('signup');
+    }
+    passport.authenticate('local')(req, res, () => {
+      res.redirect('/secret');
+    });
+  });
+});
+
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+
+app.post('/login', passport.authenticate(
+  'local',
+  {
+    successRedirect: '/secret',
+    failureRedirect: '/login',
+  },
+), (req, res) => {
+});
 
 const port = process.env.PORT || 3000;
 
